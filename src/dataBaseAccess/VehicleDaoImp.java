@@ -61,4 +61,26 @@ public class VehicleDaoImp extends DataBaseAccess implements VehicleDao {
         }
         return vehicleList;
     }
+
+    @Override
+    public Vehicle findByDriverId(int id) throws SQLException {
+        Vehicle vehicle = null;
+        if (getConnection() != null) {
+            Statement statement = getConnection().createStatement();
+            String sqlQuery = String.format("select * from vehicle where DriverId= %d", id);
+            ResultSet resultSet = statement.executeQuery(sqlQuery);
+            while (resultSet.next()) {
+                vehicle = new Vehicle();
+                vehicle.setId(resultSet.getInt("id"));
+                vehicle.setCarNumber(resultSet.getInt("vehicle_number"));
+                vehicle.setCarColor(resultSet.getString("vehicle_color"));
+                vehicle.setTypeVehicle(resultSet.getString("type_vehicle"));
+                vehicle.setDriverId(resultSet.getInt("driverId"));
+                vehicle.setLatitude(resultSet.getDouble("latitude"));
+                vehicle.setLongitude(resultSet.getDouble("longitude"));
+            }
+        }
+        return vehicle;
+    }
 }
+

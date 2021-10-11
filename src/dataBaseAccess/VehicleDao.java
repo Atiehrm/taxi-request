@@ -9,5 +9,7 @@ import java.util.List;
 public interface VehicleDao {
     void save(Vehicle vehicle) throws SQLException;
     List<Vehicle> getVehicleList() throws SQLException;
+    Vehicle findByDriverId(int id) throws SQLException;
+
 
 }

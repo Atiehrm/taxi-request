@@ -1,7 +1,6 @@
 
+import enumeration.DriverStatus;
 import exception.MyCustomException;
-import models.Passenger;
-import org.w3c.dom.ls.LSOutput;
 
 import java.sql.SQLException;
 import java.util.Scanner;
@@ -167,13 +166,45 @@ public class Main {
     }
 
     public static void driverSignUpOrLogin() throws MyCustomException, SQLException {
-        System.out.println("nationalCode: ");
-        String nationalCode = scanner.nextLine().trim();
-        if (taxiSystem.isNumeric(nationalCode, "national code")) {
-            if (!taxiSystem.isExistDriver(nationalCode)) {
-                subMenuDriver(nationalCode);
-            } else {
-                System.out.println("registered before");
+        while (true) {
+            System.out.println("nationalCode: ");
+            String nationalCode = scanner.nextLine().trim();
+            if (taxiSystem.isNumeric(nationalCode, "national code")) {
+                if (!taxiSystem.isExistDriver(nationalCode)) {
+                    subMenuDriver(nationalCode);
+                } else if (taxiSystem.isExistDriver(nationalCode)
+                        && checkStatusDriver(nationalCode, DriverStatus.WaitForTrip)) {
+                    System.out.println("you are waiting for new trip\n" +
+                            "1) exit");
+                    String choice = scanner.nextLine().trim();
+                    if (taxiSystem.isValidChoice(choice, 2)) {
+                        break;
+                    }
+                } else if (taxiSystem.isExistDriver(nationalCode)
+                        && checkStatusDriver(nationalCode, DriverStatus.InDoingTrip)) {
+                    determineDriverStatusTrip(nationalCode);
+                }
+            }
+        }
+    }
+
+    public static boolean checkStatusDriver(String nationalCode, DriverStatus driverStatus) throws SQLException {
+        boolean checkStatus = taxiSystem.checkStatusDriver(nationalCode,driverStatus);
+       return checkStatus;
+    }
+
+    public static void determineDriverStatusTrip(String nationalCode) throws MyCustomException, SQLException {
+        System.out.println("1) approve receiving cash of passenger\n" +
+                "2) end trip \n" +
+                "3) exit");
+        String choice = scanner.nextLine().trim();
+        if (taxiSystem.isValidChoice(choice, 4)) {
+            if (choice.equalsIgnoreCase("1")) {
+                taxiSystem.approveCash(nationalCode);
+            } else if (choice.equalsIgnoreCase("2")) {
+                taxiSystem.endTrip(nationalCode);
+            } else if (choice.equalsIgnoreCase("3")) {
+                return;
             }
         }
     }
@@ -203,25 +234,28 @@ public class Main {
             String choice = scanner.nextLine().trim();
             if (taxiSystem.isValidChoice(choice, 5)) {
                 if (choice.equalsIgnoreCase("1")) {
-                    System.out.println("enter destination latitude");
-                    String latitude = scanner.nextLine().trim();
-                    System.out.println("enter destination longitude");
-                    String longitude = scanner.nextLine().trim();
-                    taxiSystem.requestCabByCache(passengerNationalCode,latitude,longitude);
+                    String[] destinationLoc = destinationLocation();
+                    taxiSystem.requestCabByCash(passengerNationalCode, destinationLoc[0], destinationLoc[1]);
                 } else if (choice.equalsIgnoreCase("2")) {
-                    System.out.println("enter destination latitude");
-                    String latitude = scanner.nextLine().trim();
-                    System.out.println("enter destination longitude");
-                    String longitude = scanner.nextLine().trim();
-                    taxiSystem.requestCabByAccount(passengerNationalCode,latitude,longitude);
+                    String[] destinationLoc = destinationLocation();
+                    taxiSystem.requestCabByAccount(passengerNationalCode, destinationLoc[0], destinationLoc[1]);
                 } else if (choice.equalsIgnoreCase("3")) {
                     System.out.println("enter deposit u wanna add ");
                     String deposit = scanner.nextLine().trim();
-                    taxiSystem.increaseAccountDeposit(passengerNationalCode,deposit);
+                    taxiSystem.increaseAccountDeposit(passengerNationalCode, deposit);
                 } else if (choice.equalsIgnoreCase("4")) {
                     break;
                 }
             }
         }
+    }
+
+    public static String[] destinationLocation() {
+        String[] getDestination = new String[2];
+        System.out.println("enter destination latitude");
+        getDestination[0] = scanner.nextLine().trim();
+        System.out.println("enter destination longitude");
+        getDestination[1] = scanner.nextLine().trim();
+        return getDestination;
     }
 }

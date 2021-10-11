@@ -167,7 +167,7 @@ public class TaxiSystem {
     }
 
 
-    protected void requestCabByCache(String passengerNationalCode, String latitude, String longitude)
+    protected void requestCabByCash(String passengerNationalCode, String latitude, String longitude)
             throws SQLException {
         Passenger found = passengerDao.findByNationalCode(passengerNationalCode);
         List<Vehicle> vehicleList = vehicleDao.getVehicleList();
@@ -180,6 +180,10 @@ public class TaxiSystem {
                 found.setInTrip(true);
                 found.setLatitudePassenger(Double.parseDouble(latitude));
                 found.setLongitudePassenger(Double.parseDouble(longitude));
+                for (Vehicle vehicle : vehicleList){
+                    vehicle.setLatitude(Double.parseDouble(latitude));
+                    vehicle.setLongitude(Double.parseDouble(longitude));
+                }
             }
         }
     }
@@ -225,7 +229,7 @@ public class TaxiSystem {
             foundPassenger.setDeposit(foundPassenger.getDeposit() - calculateTripCost(foundPassenger
                     , Double.parseDouble(latitude)
                     , Double.parseDouble(longitude)));
-            requestCabByCache(passengerNationalCode, latitude, longitude);
+            requestCabByCash(passengerNationalCode, latitude, longitude);
         }
     }
 
@@ -244,5 +248,28 @@ public class TaxiSystem {
     protected void increaseAccountDeposit(String passengerNationalCode, String deposit) throws SQLException {
         Passenger foundPassenger = passengerDao.findByNationalCode(passengerNationalCode);
         foundPassenger.setDeposit(Double.parseDouble(deposit));
+    }
+
+    protected boolean checkStatusDriver(String nationalCode, DriverStatus driverStatus) throws SQLException {
+        boolean status = false;
+        Driver driver = driverDao.findByNationalCode(nationalCode);
+        if (driverStatus == (driver.getDriverStatus())) {
+            status = true;
+        }
+        return status;
+    }
+
+    protected void approveCash(String nationalCode) throws SQLException {
+        Driver driver = driverDao.findByNationalCode(nationalCode);
+        driver.setApproveReceiveMoney(true);
+    }
+
+    protected void endTrip(String nationalCode) throws SQLException {
+        Driver driver = driverDao.findByNationalCode(nationalCode);
+        Vehicle vehicle=vehicleDao.findByDriverId(driver.getId());
+        if (driver.isApproveReceiveMoney()){
+            driver.setDriverStatus(DriverStatus.WaitForTrip);
+        }
+
     }
 }
