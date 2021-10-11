@@ -146,6 +146,7 @@ public class Main {
                 subMenuPassenger(nationalCode);
             } else {
                 System.out.println("registered before");
+                requestCab(nationalCode);
             }
         }
     }
@@ -191,9 +192,9 @@ public class Main {
         }
     }
 
-    public static void requestCab(String nationalCode) throws MyCustomException, SQLException {
+    public static void requestCab(String passengerNationalCode) throws MyCustomException, SQLException {
         while (true) {
-            if (!taxiSystem.passengerTripStatus(nationalCode)) {
+            if (!taxiSystem.passengerTripStatus(passengerNationalCode)) {
                 System.out.println("1)request Cab By Cache\n" +
                         "2)request cab by account\n" +
                         "3) increase account money\n" +
@@ -202,11 +203,21 @@ public class Main {
             String choice = scanner.nextLine().trim();
             if (taxiSystem.isValidChoice(choice, 5)) {
                 if (choice.equalsIgnoreCase("1")) {
-                    taxiSystem.requestCabByCache();
+                    System.out.println("enter destination latitude");
+                    String latitude = scanner.nextLine().trim();
+                    System.out.println("enter destination longitude");
+                    String longitude = scanner.nextLine().trim();
+                    taxiSystem.requestCabByCache(passengerNationalCode,latitude,longitude);
                 } else if (choice.equalsIgnoreCase("2")) {
-                    taxiSystem.requestCabByAccount();
+                    System.out.println("enter destination latitude");
+                    String latitude = scanner.nextLine().trim();
+                    System.out.println("enter destination longitude");
+                    String longitude = scanner.nextLine().trim();
+                    taxiSystem.requestCabByAccount(passengerNationalCode,latitude,longitude);
                 } else if (choice.equalsIgnoreCase("3")) {
-                    taxiSystem.increaseAccountDeposit();
+                    System.out.println("enter deposit u wanna add ");
+                    String deposit = scanner.nextLine().trim();
+                    taxiSystem.increaseAccountDeposit(passengerNationalCode,deposit);
                 } else if (choice.equalsIgnoreCase("4")) {
                     break;
                 }

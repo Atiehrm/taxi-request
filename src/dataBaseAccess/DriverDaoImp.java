@@ -76,4 +76,24 @@ public class DriverDaoImp extends DataBaseAccess implements DriverDao {
         return driver;
     }
 
+    @Override
+    public Driver findByDriverId(int id) throws SQLException {
+        Driver driver = null;
+        if (getConnection() != null) {
+            Statement statement = getConnection().createStatement();
+            String sqlQuery = String.format("select * from driver where id= %d", id);
+            ResultSet resultSet = statement.executeQuery(sqlQuery);
+            while (resultSet.next()) {
+                driver = new Driver();
+                driver.setId(resultSet.getInt("id"));
+                driver.setFirstName(resultSet.getString("first_name"));
+                driver.setLastName(resultSet.getString("last_name"));
+                driver.setNationalCode(resultSet.getString("national_code"));
+                driver.setPhoneNumber(resultSet.getString("phone_num"));
+                driver.setBirthday(resultSet.getDate("birthday"));
+            }
+        }
+        return driver;
+    }
+
 }

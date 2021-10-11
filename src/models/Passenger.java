@@ -7,6 +7,7 @@ public class Passenger extends PersonalInfo {
     private boolean inTrip;
     private double latitudePassenger;
     private double longitudePassenger;
+    private double deposit;
 
     public Passenger(String firstName, String lastName, String nationalCode, String phoneNumber, Date birthday) {
         super(firstName, lastName, nationalCode, phoneNumber, birthday);
@@ -36,6 +37,14 @@ public class Passenger extends PersonalInfo {
         return longitudePassenger;
     }
 
+    public double getDeposit() {
+        return deposit;
+    }
+
+    public void setDeposit(double deposit) {
+        this.deposit = deposit;
+    }
+
     public void setLongitudePassenger(double longitudePassenger) {
         this.longitudePassenger = longitudePassenger;
     }
@@ -50,4 +59,5 @@ public class Passenger extends PersonalInfo {
                 + getPhoneNumber() + ", "
                 + getBirthday() + " }";
     }
+
 }

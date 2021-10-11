@@ -1,6 +1,7 @@
 package models;
 
 import java.sql.Date;
+import java.util.Objects;
 
 public class PersonalInfo {
     private int id;
@@ -69,5 +70,18 @@ public class PersonalInfo {
 
     public void setBirthday(Date birthday) {
         this.birthday = birthday;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PersonalInfo that = (PersonalInfo) o;
+        return nationalCode.equals(that.nationalCode);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(nationalCode);
     }
 }

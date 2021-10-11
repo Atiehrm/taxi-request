@@ -8,12 +8,21 @@ public class Driver extends PersonalInfo {
     boolean approveReceiveMoney;
     private DriverStatus driverStatus;
 
+
     public Driver() {
         super();
     }
 
     public Driver(String firstName, String lastName, String nationalCode, String phoneNumber, Date birthday) {
         super(firstName, lastName, nationalCode, phoneNumber, birthday);
+    }
+
+    public DriverStatus getDriverStatus() {
+        return driverStatus;
+    }
+
+    public void setDriverStatus(DriverStatus driverStatus) {
+        this.driverStatus = driverStatus;
     }
 
     public boolean isApproveReceiveMoney() {

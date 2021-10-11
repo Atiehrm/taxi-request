@@ -1,4 +1,5 @@
 import dataBaseAccess.*;
+import enumeration.DriverStatus;
 import enumeration.VehicleType;
 import exception.MyCustomException;
 import models.Driver;
@@ -7,7 +8,10 @@ import models.Vehicle;
 
 import java.sql.Date;
 import java.sql.SQLException;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class TaxiSystem {
     private static DriverDao driverDao;
@@ -65,6 +69,7 @@ public class TaxiSystem {
                         , driverInputs[2], driverInputs[3]
                         , Date.valueOf(driverInputs[4]));
                 driverDao.save(driver);
+                driver.setDriverStatus(DriverStatus.WaitForTrip);
                 addCarOfDriver(driver, carFeature);
                 System.out.println("driver added successfully ");
             } else {
@@ -162,13 +167,82 @@ public class TaxiSystem {
     }
 
 
-    protected void requestCabByCache(){
-        
+    protected void requestCabByCache(String passengerNationalCode, String latitude, String longitude)
+            throws SQLException {
+        Passenger found = passengerDao.findByNationalCode(passengerNationalCode);
+        List<Vehicle> vehicleList = vehicleDao.getVehicleList();
+        Driver driverWithMinDistance = calculateMinDistance(vehicleList, found);
+        List<Driver> driverList = driverDao.getDriverList();
+        for (Driver driver : driverList) {
+            if (driver.getDriverStatus() == DriverStatus.WaitForTrip
+                    && driver.getId() == driverWithMinDistance.getId()) {
+                driver.setDriverStatus(DriverStatus.InDoingTrip);
+                found.setInTrip(true);
+                found.setLatitudePassenger(Double.parseDouble(latitude));
+                found.setLongitudePassenger(Double.parseDouble(longitude));
+            }
+        }
     }
-    protected void requestCabByAccount(){
 
+    public Driver calculateMinDistance(List<Vehicle> vehicleList, Passenger passenger) throws SQLException {
+        Map<Vehicle, Double> vehicleDistances = new HashMap<>();
+        for (Vehicle vehicle : vehicleList) {
+            double distance = calculateDistance(vehicle, passenger);
+            vehicleDistances.put(vehicle, distance);
+
+        }
+        Vehicle key = Collections.min(vehicleDistances.entrySet(), Map.Entry.comparingByValue()).getKey();
+        Driver driver = driverDao.findByDriverId(key.getDriverId());
+        return driver;
     }
-    protected void increaseAccountDeposit(){
 
+    protected double calculateDistance(Vehicle vehicle, Passenger passenger) {
+        double theta = vehicle.getLongitude() - passenger.getLongitudePassenger();
+        double dist = Math.sin(deg2rad(vehicle.getLatitude())) * Math.sin(deg2rad(passenger.getLatitudePassenger()))
+                + Math.cos(deg2rad(vehicle.getLatitude())) * Math.cos(deg2rad(passenger.getLatitudePassenger()))
+                * Math.cos(deg2rad(theta));
+        dist = Math.acos(dist);
+        dist = rad2deg(dist);
+        dist = dist * 60 * 1.1515;
+        dist = dist * 1.609344;
+        return dist;
+    }
+
+    private double deg2rad(double deg) {
+        return (deg * Math.PI / 180.0);
+    }
+
+    private double rad2deg(double rad) {
+        return (rad * 180.0 / Math.PI);
+    }
+
+    protected void requestCabByAccount(String passengerNationalCode, String latitude, String longitude) throws SQLException {
+        Passenger foundPassenger = passengerDao.findByNationalCode(passengerNationalCode);
+        if (foundPassenger.getDeposit() < calculateTripCost(foundPassenger, Double.parseDouble(latitude)
+                , Double.parseDouble(longitude))) {
+            System.out.println("increase your deposit first ");
+        } else {
+            foundPassenger.setDeposit(foundPassenger.getDeposit() - calculateTripCost(foundPassenger
+                    , Double.parseDouble(latitude)
+                    , Double.parseDouble(longitude)));
+            requestCabByCache(passengerNationalCode, latitude, longitude);
+        }
+    }
+
+    protected double calculateTripCost(Passenger foundPassenger, double latitude, double longitude) {
+        double theta = foundPassenger.getLongitudePassenger() - longitude;
+        double dist = Math.sin(deg2rad(foundPassenger.getLatitudePassenger())) * Math.sin(deg2rad(latitude))
+                + Math.cos(deg2rad(foundPassenger.getLatitudePassenger())) * Math.cos(deg2rad(latitude))
+                * Math.cos(deg2rad(theta));
+        dist = Math.acos(dist);
+        dist = rad2deg(dist);
+        dist = dist * 60 * 1.1515;
+        dist = dist * 1.609344;
+        return 1000 * dist;
+    }
+
+    protected void increaseAccountDeposit(String passengerNationalCode, String deposit) throws SQLException {
+        Passenger foundPassenger = passengerDao.findByNationalCode(passengerNationalCode);
+        foundPassenger.setDeposit(Double.parseDouble(deposit));
     }
 }
